@@ -12,7 +12,6 @@ class ValidateMail extends Command
   protected function configure()
      {
          $this->setName('validate')
-         // popraw descirption
              ->setDescription('This command check emails')
              ->setHelp('This command loads the file and searches it for invalid email addresses')
              ->addArgument('msg', InputArgument::REQUIRED, 'Pass a file name');
