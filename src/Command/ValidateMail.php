@@ -25,32 +25,41 @@ class ValidateMail extends Command
         $path =  __DIR__ . '/resources' .'/'. $fileName . '.csv';
         $insertedData = file_get_contents($path);
         $arr = explode("\n", $insertedData);
-        $validEmailsSheet = fopen("validEmails.csv" ,"w");
+        $validEmailsSheet = fopen("validEmailsSheet.csv" ,"w");
         $validEmailCounter = 0;
 
 // Prepear variables for handling invalid emails & raport
-        $invalidEmailsSheet = fopen("invalidEmails.csv" ,"w");
+        $invalidEmailsSheet = fopen("invalidEmailsSheet.csv" ,"w");
         $invalidEmailCounter = 0;
         $validEmailCounter = 0;
-        $raport = fopen("raport.txt");
+        $raport = fopen("raport.txt" ,"w");
 
-         $pattern = "/[-0-9a-zA-Z.+_]+@[-0-9a-zA-Z.+_]+.[a-zA-Z]{2,4}/";
 
-         foreach ($arr as $key => $value) {
-           if (!preg_match($pattern, $value)){
-             $value .= "\n";
-             fwrite($invalidEmailsSheet, $value);
-             $invalidEmailCounter ++;
-           } else {
-             $value .= "\n";
-             fwrite($validEmailsSheet, $value);
-             $validEmailCounter ++;
+         foreach ($arr as $key => $email) {
+           if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+             print $email . "\n";
+
+             $pieces = explode("@", $email);
+             $domain = $pieces[1];
+
+             if ( checkdnsrr($domain, 'MX') ) {
+               $email .= "\n";
+               fwrite($validEmailsSheet, $email);
+               $validEmailCounter ++;
+              }
            }
-
+           else {
+             $email .= "\n";
+             fwrite($invalidEmailsSheet, $email);
+             $invalidEmailCounter ++;
+           }
          }
 
-         // var_dump($arr);
-         // fclose($invalidEmailsSheet);
+         fwrite($raport,
+          'Liczba poprawnych adresów email wynosi : ' . "\t" . $validEmailCounter . "\n" .
+          'Liczba niepoprawnych adresów email wynosi : ' . "\t" . $invalidEmailCounter . "\n"
+          );
+
          return 0;
      }
 }
